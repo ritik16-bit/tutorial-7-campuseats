@@ -1,0 +1,26 @@
+{
+  "name": "campus-library",
+  "version": "2.0.0",
+  "description": "Campus Library GraphQL Application - Ritik Kumar (20251651078)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "client": "node client.js",
+    "setup-db": "node setup-db.js",
+    "test": "node -e \"fetch('http://localhost:4000/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:'{ authors { id name } }'})}).then(r=>r.json()).then(d=>console.log(d))\""
+  },
+  "keywords": [
+    "graphql",
+    "apollo",
+    "mysql",
+    "iiit-vadodara",
+    "web-services"
+  ],
+  "author": "Ritik Kumar (20251651078)",
+  "type": "commonjs",
+  "dependencies": {
+    "@apollo/server": "^5.5.1",
+    "graphql": "^16.14.2",
+    "mysql2": "^3.24.6"
+  }
+}

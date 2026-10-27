@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Library GraphQL Engine | Ritik Kumar (20251651078)</title>
+  <meta name="description" content="Modern end-to-end Campus Library portal powered by GraphQL, Node.js Apollo Server, and MySQL. Submitted by Ritik Kumar (20251651078) for CS543 Web Services.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav" aria-label="Main Navigation">
+    <div class="nav-container">
+      <div class="brand-section">
+        <div class="brand-logo" title="Campus Library GraphQL Engine">📚</div>
+        <div>
+          <div class="brand-title">
+            Campus Library <span class="brand-badge">GraphQL v2</span>
+          </div>
+          <div style="font-size: 0.73rem; color: var(--text-muted);">
+            CS543 Web Services &bull; IIIT Vadodara
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Attribution Card -->
+      <div class="student-card" id="studentAttribution">
+        <div class="student-avatar">RK</div>
+        <div class="student-info">
+          <span class="student-name">Ritik Kumar</span>
+          <span class="student-roll">Roll: 20251651078</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Live GraphQL Connection Status -->
+        <div id="serverStatus" class="status-indicator" title="GraphQL Server Status">
+          <span class="pulse-dot"></span> Checking API...
+        </div>
+
+        <!-- Refresh Button -->
+        <button id="btnRefresh" class="btn-icon" onclick="refreshAllData()" title="Reload GraphQL Data" aria-label="Reload Data">
+          🔄
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="btnThemeToggle" class="btn-icon" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+          <span id="themeIcon">☀️</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Application Body -->
+  <main class="main-wrapper">
+    
+    <!-- Hero / Architecture Overview Card -->
+    <section class="hero-card">
+      <div class="hero-content">
+        <div class="hero-subtitle">GraphQL &bull; Apollo Server Standalone &bull; Relational MySQL</div>
+        <h1 class="hero-title">Campus Library Architecture Hub</h1>
+        <p class="hero-desc">
+          A high-performance decoupled data application demonstrating single-endpoint nested queries, relational join resolvers, and transactional write mutations.
+        </p>
+
+        <div class="academic-meta-strip">
+          <span class="meta-pill"><strong>Student:</strong> Ritik Kumar</span>
+          <span class="meta-pill"><strong>Roll No:</strong> 20251651078</span>
+          <span class="meta-pill"><strong>Institution:</strong> IIIT Vadodara</span>
+          <span class="meta-pill"><strong>Course:</strong> CS543 &ndash; Web Services</span>
+          <span class="meta-pill"><strong>Instructor:</strong> Dr. Pramit Mazumdar</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-Time Metrics Strip -->
+    <section class="stats-grid" aria-label="Live Statistics">
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Registered Authors</div>
+          <div id="totalAuthorsCount" class="stat-value">--</div>
+        </div>
+        <div class="stat-icon">👨‍🏫</div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Catalogued Books</div>
+          <div id="totalBooksCount" class="stat-value">--</div>
+        </div>
+        <div class="stat-icon emerald">📖</div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">GraphQL Query Latency</div>
+          <div id="latencyStat" class="stat-value" style="font-size: 1.5rem;">-- ms</div>
+        </div>
+        <div class="stat-icon cyan">⚡</div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <div class="stat-label">Data Store Engine</div>
+          <div id="engineStatusLabel" class="stat-value" style="font-size: 1.15rem; font-weight: 700;">Initializing</div>
+        </div>
+        <div class="stat-icon amber">💾</div>
+      </div>
+    </section>
+
+    <!-- Controls & View Switcher -->
+    <section class="controls-bar">
+      <!-- Search Input -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="globalSearchInput" placeholder="Filter by book title, author name, or year..." autocomplete="off">
+      </div>
+
+      <!-- View Selector Tabs -->
+      <div class="view-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="authors" role="tab" aria-selected="true">
+          Authors &amp; Books
+        </button>
+        <button class="tab-btn" data-tab="catalog" role="tab" aria-selected="false">
+          Master Catalog
+        </button>
+        <button class="tab-btn" data-tab="studio" role="tab" aria-selected="false">
+          GraphQL Studio
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="openModal('modalAddAuthor')">
+          <span>👤</span> Add Author
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modalAddBook')">
+          <span>➕</span> Add Book
+        </button>
+      </div>
+    </section>
+
+    <!-- Dynamic View Area (Authors Grid or Catalog View) -->
+    <div id="mainContentArea" class="authors-grid">
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 0; color: var(--text-muted);">
+        <div class="skeleton" style="height: 140px; margin-bottom: 1rem;"></div>
+        <div class="skeleton" style="height: 140px;"></div>
+      </div>
+    </div>
+
+    <!-- View 3: Embedded GraphQL Studio / Playground -->
+    <section id="studioSection" class="graphql-studio" style="display: none; margin-top: 1.5rem;">
+      <div class="code-editor-card">
+        <div class="editor-header">
+          <div class="editor-title">
+            <span>⚡</span> GraphQL Query &amp; Mutation Editor
+          </div>
+          <div style="display: flex; gap: 0.4rem;">
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="loadPresetQuery('authors')">Preset: Authors</button>
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="loadPresetQuery('stats')">Preset: Stats</button>
+            <button class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="loadPresetQuery('mutation')">Preset: Mutation</button>
+          </div>
+        </div>
+        <div class="editor-body">
+          <textarea id="studioQueryText" class="gql-textarea" spellcheck="false">query GetAllAuthorsAndBooks {
+  authors {
+    id
+    name
+    country
+    bookCount
+    books {
+      id
+      title
+      year
+    }
+  }
+}</textarea>
+          <div style="margin-top: 0.85rem; display: flex; justify-content: flex-end;">
+            <button id="btnRunStudio" class="btn btn-primary" onclick="runStudioQuery()">
+              ▶ Execute Query
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-editor-card">
+        <div class="editor-header">
+          <div class="editor-title">
+            <span>📡</span> Live GraphQL Response (JSON)
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Endpoint: http://localhost:4000/</span>
+        </div>
+        <div class="editor-body">
+          <pre id="studioResponsePre" class="response-pre">// Press "Execute Query" to inspect live response</pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Add Book (Mutation: addBook) -->
+  <div id="modalAddBook" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalAddBookTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalAddBookTitle" class="modal-title">📖 Add New Book</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalAddBook')" aria-label="Close Dialog">&times;</button>
+      </div>
+      <form id="formAddBook">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="bookTitleInput">Book Title</label>
+            <input type="text" id="bookTitleInput" class="form-control" placeholder="e.g. Modern Distributed Systems" required>
+          </div>
+          <div class="form-group">
+            <label for="bookYearInput">Publication Year</label>
+            <input type="number" id="bookYearInput" class="form-control" placeholder="2026" min="1900" max="2100" value="2026">
+          </div>
+          <div class="form-group">
+            <label for="bookAuthorSelect">Author (Dynamically Loaded from GraphQL)</label>
+            <select id="bookAuthorSelect" class="form-control" required>
+              <option value="">Loading authors from GraphQL API...</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalAddBook')">Cancel</button>
+          <button type="submit" id="btnSubmitAddBook" class="btn btn-primary">Save Book Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Author (Mutation: addAuthor) -->
+  <div id="modalAddAuthor" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalAddAuthorTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalAddAuthorTitle" class="modal-title">👤 Register New Author</h3>
+        <button class="btn-close-modal" onclick="closeModal('modalAddAuthor')" aria-label="Close Dialog">&times;</button>
+      </div>
+      <form id="formAddAuthor">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="authorNameInput">Author Full Name</label>
+            <input type="text" id="authorNameInput" class="form-control" placeholder="e.g. Dr. Alan Turing" required>
+          </div>
+          <div class="form-group">
+            <label for="authorCountryInput">Country of Origin</label>
+            <input type="text" id="authorCountryInput" class="form-control" placeholder="e.g. India, United Kingdom" value="India">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalAddAuthor')">Cancel</button>
+          <button type="submit" id="btnSubmitAddAuthor" class="btn btn-primary">Register Author</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Client Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
