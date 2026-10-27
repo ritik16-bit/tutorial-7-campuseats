@@ -422,6 +422,5 @@ campus-library/
 
 **Report Prepared By:**  
 **Ritik Kumar**  
-Roll Number: **20251651078**  
-B.Tech / M.Tech &ndash; Computer Science &amp; Engineering  
+Roll Number: **20251651078**   
 Indian Institute of Information Technology Vadodara (IIIT Vadodara)  
